@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-// import 'edit_profile_screen.dart'; // You will link this later
-// import 'settings_screen.dart'; // You will link this later
+import 'edit_profile_screen.dart';
+import 'settings_screen.dart';
 
 class ProfileScreen extends StatelessWidget {
   const ProfileScreen({super.key});
@@ -24,8 +24,10 @@ class ProfileScreen extends StatelessWidget {
           IconButton(
             icon: Icon(Icons.settings, color: Color(0xFF00f0ff)),
             onPressed: () {
-              // Navigate to Settings
-              // Navigator.push(context, MaterialPageRoute(builder: (context) => SettingsScreen()));
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => SettingsScreen()),
+              );
             },
           ),
         ],
@@ -83,8 +85,12 @@ class ProfileScreen extends StatelessWidget {
                       style: TextStyle(color: Colors.white),
                     ),
                     onPressed: () {
-                      // Navigate to Edit Profile
-                      // Navigator.push(context, MaterialPageRoute(builder: (context) => EditProfileScreen()));
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => EditProfileScreen(),
+                        ),
+                      );
                     },
                   ),
                 ],

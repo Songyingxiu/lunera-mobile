@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'screens/login_screen.dart';
+import 'screens/splash_screen.dart';
 
 void main() {
   runApp(LuneraApp());
@@ -17,7 +17,7 @@ class LuneraApp extends StatelessWidget {
         scaffoldBackgroundColor: Color(0xFF050508),
         primaryColor: Color(0xFFb026ff),
       ),
-      home: LoginScreen(), // Starts at the login screen
+      home: SplashScreen(), // Starts at the login screen
     );
   }
 }
