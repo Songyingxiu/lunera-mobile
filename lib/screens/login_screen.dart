@@ -1,10 +1,9 @@
 import 'package:flutter/material.dart';
-import 'package:http/http.dart' as http; // Added for API requests
-import 'dart:convert'; // Added for JSON decoding
+import 'package:http/http.dart' as http;
+import 'dart:convert';
 import 'user/main_screen.dart';
 import 'admin/admin_main_screen.dart';
 
-// Changed from StatelessWidget to StatefulWidget to handle loading states
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
 
@@ -16,9 +15,8 @@ class _LoginScreenState extends State<LoginScreen> {
   final TextEditingController usernameController = TextEditingController();
   final TextEditingController passwordController = TextEditingController();
 
-  bool _isLoading = false; // Tracks if the app is waiting for the server
+  bool _isLoading = false;
 
-  // Helper method to show error messages easily
   void _showError(BuildContext context, String message) {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
@@ -28,32 +26,27 @@ class _LoginScreenState extends State<LoginScreen> {
     );
   }
 
-  // The updated real API login function
   Future<void> loginUser(BuildContext context) async {
-    // 1. Show the loading spinner
     setState(() {
       _isLoading = true;
     });
 
     try {
-      // 2. Send data to your new CI4 API endpoint
+      // 🚀 CHANGED: Using localhost instead of 10.0.2.2 for Flutter Web!
       final response = await http.post(
-        Uri.parse('http://10.0.2.2:8076/api/auth/login'),
+        Uri.parse('http://localhost:8076/api/auth/login'),
         body: {
           'username': usernameController.text,
           'password': passwordController.text,
         },
       );
 
-      // 3. Process the response
       if (response.statusCode == 200) {
         final Map<String, dynamic> responseData = json.decode(response.body);
 
         if (responseData['status'] == 200) {
-          // Success: Get role from database response
           String userRole = responseData['data']['role'];
 
-          // Navigate based on real database role
           if (userRole == 'admin') {
             Navigator.pushReplacement(
               context,
@@ -66,17 +59,15 @@ class _LoginScreenState extends State<LoginScreen> {
             );
           }
         } else {
-          // Server returned an error (e.g., Wrong password)
           _showError(context, responseData['message']);
         }
       } else {
         _showError(context, "Server Error: ${response.statusCode}");
       }
     } catch (e) {
-      // Catch network errors (e.g., CI4 server is turned off)
-      _showError(context, "Connection failed. Is the CI4 server running?");
+      // If it fails here, it's either because CI4 is off, OR it's a CORS error.
+      _showError(context, "Connection failed: $e");
     } finally {
-      // 4. Hide the loading spinner
       if (mounted) {
         setState(() {
           _isLoading = false;
@@ -108,7 +99,7 @@ class _LoginScreenState extends State<LoginScreen> {
               controller: usernameController,
               style: TextStyle(color: Colors.white),
               decoration: InputDecoration(
-                labelText: "IDENTITY CODE", // Removed the mock instruction
+                labelText: "IDENTITY CODE",
                 labelStyle: TextStyle(color: Colors.grey),
                 enabledBorder: OutlineInputBorder(
                   borderSide: BorderSide(color: Color(0xFF00f0ff)),
@@ -142,9 +133,7 @@ class _LoginScreenState extends State<LoginScreen> {
                 style: ElevatedButton.styleFrom(
                   backgroundColor: Color(0xFFFF0099),
                 ),
-                // Disable button if currently loading
                 onPressed: _isLoading ? null : () => loginUser(context),
-                // Show a loading spinner if _isLoading is true
                 child: _isLoading
                     ? CircularProgressIndicator(color: Colors.white)
                     : Text(

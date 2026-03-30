@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'home_screen.dart';
 import 'explore_screen.dart';
 import 'mylist_screen.dart';
+import 'profile_screen.dart';
 
 class MainScreen extends StatefulWidget {
   const MainScreen({super.key});
@@ -17,6 +18,7 @@ class _MainScreenState extends State<MainScreen> {
     HomeScreen(),
     ExploreScreen(),
     MyListScreen(),
+    ProfileScreen(),
     Center(
       child: Text(
         "PROFILE PAGE Placeholder",
