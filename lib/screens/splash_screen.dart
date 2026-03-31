@@ -28,7 +28,7 @@ class _SplashScreenState extends State<SplashScreen> {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            // 1. The Glowing Logo
+            // LOGO
             Container(
               width: 160,
               height: 160,
@@ -52,7 +52,7 @@ class _SplashScreenState extends State<SplashScreen> {
               child: ClipOval(
                 // This calls the image you added to pubspec.yaml
                 child: Image.asset(
-                  'assets/images/lunera_test_logo.jpg',
+                  'assets/images/Lunera_Logo.png',
                   fit: BoxFit.cover,
                   // If the image path is wrong, it shows this icon instead of crashing
                   errorBuilder: (context, error, stackTrace) => Icon(
@@ -65,23 +65,6 @@ class _SplashScreenState extends State<SplashScreen> {
             ),
 
             SizedBox(height: 50),
-
-            // 2. The Brand Name
-            Text(
-              "LUNERA",
-              style: TextStyle(
-                color: Colors.white,
-                fontSize: 42,
-                fontWeight: FontWeight.w900,
-                letterSpacing: 12,
-                shadows: [
-                  Shadow(
-                    color: Color(0xFFFF0099),
-                    blurRadius: 15,
-                  ), // Pink text shadow
-                ],
-              ),
-            ),
 
             SizedBox(height: 10),
 

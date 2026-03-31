@@ -10,19 +10,22 @@ class ProfileScreen extends StatelessWidget {
     return Scaffold(
       backgroundColor: Color(0xFF050508),
       appBar: AppBar(
-        backgroundColor: Colors.transparent,
+        backgroundColor: Color(0xFF050508),
         elevation: 0,
         title: Text(
-          "IDENTITY",
+          "USER IDENTITY",
           style: TextStyle(
             color: Colors.white,
-            letterSpacing: 3,
-            fontWeight: FontWeight.bold,
+            letterSpacing: 4,
+            fontWeight: FontWeight.w900,
+            shadows: [
+              Shadow(color: Color(0xFF00f0ff).withOpacity(0.5), blurRadius: 10),
+            ],
           ),
         ),
         actions: [
           IconButton(
-            icon: Icon(Icons.settings, color: Color(0xFF00f0ff)),
+            icon: Icon(Icons.settings_outlined, color: Color(0xFF00f0ff)),
             onPressed: () {
               Navigator.push(
                 context,
@@ -31,67 +34,145 @@ class ProfileScreen extends StatelessWidget {
             },
           ),
         ],
+        bottom: PreferredSize(
+          preferredSize: Size.fromHeight(1.0),
+          child: Container(
+            decoration: BoxDecoration(
+              boxShadow: [
+                BoxShadow(
+                  color: Color(0xFF00f0ff).withOpacity(0.5),
+                  blurRadius: 10,
+                ),
+              ],
+              color: Color(0xFF00f0ff).withOpacity(0.3),
+            ),
+            height: 1.0,
+          ),
+        ),
       ),
       body: SingleChildScrollView(
-        padding: EdgeInsets.all(16),
+        padding: EdgeInsets.symmetric(horizontal: 16, vertical: 24),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // 1. User Header (Avatar and Info)
+            // --- 1. HOLOGRAPHIC AVATAR & INFO ---
             Center(
               child: Column(
                 children: [
-                  Container(
-                    padding: EdgeInsets.all(4),
-                    decoration: BoxDecoration(
-                      shape: BoxShape.circle,
-                      border: Border.all(color: Color(0xFFb026ff), width: 2),
-                    ),
-                    child: CircleAvatar(
-                      radius: 50,
-                      backgroundColor: Color(0xFF121216),
-                      // If the user has an avatar uploaded, it goes here
-                      backgroundImage: NetworkImage(
-                        'https://via.placeholder.com/150/1a0033/00f0ff?text=U1',
+                  Stack(
+                    alignment: Alignment.bottomRight,
+                    children: [
+                      Container(
+                        padding: EdgeInsets.all(4),
+                        decoration: BoxDecoration(
+                          shape: BoxShape.circle,
+                          border: Border.all(
+                            color: Color(0xFF00f0ff),
+                            width: 2,
+                          ),
+                          boxShadow: [
+                            BoxShadow(
+                              color: Color(0xFF00f0ff).withOpacity(0.2),
+                              blurRadius: 20,
+                              spreadRadius: 5,
+                            ),
+                          ],
+                        ),
+                        child: CircleAvatar(
+                          radius: 50,
+                          backgroundColor: Color(0xFF121216),
+                          backgroundImage: NetworkImage(
+                            'https://i.pravatar.cc/150?img=11',
+                          ),
+                        ),
                       ),
-                    ),
+                      // Online Status Indicator
+                      Container(
+                        height: 20,
+                        width: 20,
+                        margin: EdgeInsets.only(bottom: 4, right: 4),
+                        decoration: BoxDecoration(
+                          color: Colors.greenAccent,
+                          shape: BoxShape.circle,
+                          border: Border.all(
+                            color: Color(0xFF050508),
+                            width: 4,
+                          ),
+                          boxShadow: [
+                            BoxShadow(color: Colors.greenAccent, blurRadius: 8),
+                          ],
+                        ),
+                      ),
+                    ],
                   ),
                   SizedBox(height: 16),
                   Text(
-                    "USER_01",
+                    "KOBO KANAERU",
                     style: TextStyle(
                       color: Colors.white,
                       fontSize: 24,
-                      fontWeight: FontWeight.bold,
-                      letterSpacing: 2,
+                      fontWeight: FontWeight.w900,
+                      letterSpacing: 3,
+                      shadows: [
+                        Shadow(color: Color(0xFFb026ff), blurRadius: 10),
+                      ], // Purple glow
                     ),
                   ),
+                  SizedBox(height: 4),
                   Text(
-                    "System Access: Standard",
-                    style: TextStyle(color: Color(0xFF00f0ff), fontSize: 14),
+                    "ID: #8934-SYS  |  Access: STANDARD",
+                    style: TextStyle(
+                      color: Color(0xFF00f0ff),
+                      fontSize: 12,
+                      fontWeight: FontWeight.bold,
+                      letterSpacing: 1,
+                    ),
                   ),
-                  SizedBox(height: 20),
-                  ElevatedButton.icon(
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Color(0xFF121216),
-                      side: BorderSide(color: Color(0xFFb026ff)),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(8),
-                      ),
-                    ),
-                    icon: Icon(Icons.edit, color: Color(0xFF00f0ff)),
-                    label: Text(
-                      "EDIT PROFILE",
-                      style: TextStyle(color: Colors.white),
-                    ),
-                    onPressed: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) => EditProfileScreen(),
+                  SizedBox(height: 24),
+
+                  // Glowing Edit Button
+                  Container(
+                    width: 200,
+                    height: 45,
+                    decoration: BoxDecoration(
+                      boxShadow: [
+                        BoxShadow(
+                          color: Color(0xFFb026ff).withOpacity(0.3),
+                          blurRadius: 15,
+                          offset: Offset(0, 5),
                         ),
-                      );
-                    },
+                      ],
+                    ),
+                    child: ElevatedButton.icon(
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Color(0xFF121216),
+                        side: BorderSide(color: Color(0xFFb026ff)),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                      ),
+                      icon: Icon(
+                        Icons.edit_outlined,
+                        color: Color(0xFFb026ff),
+                        size: 18,
+                      ),
+                      label: Text(
+                        "EDIT IDENTITY",
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontWeight: FontWeight.bold,
+                          letterSpacing: 1,
+                        ),
+                      ),
+                      onPressed: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => EditProfileScreen(),
+                          ),
+                        );
+                      },
+                    ),
                   ),
                 ],
               ),
@@ -99,86 +180,66 @@ class ProfileScreen extends StatelessWidget {
 
             SizedBox(height: 40),
 
-            // 2. Watch History Section
-            Text(
-              "RECENT HISTORY",
-              style: TextStyle(
-                color: Colors.white,
-                fontSize: 18,
-                fontWeight: FontWeight.bold,
-                letterSpacing: 1,
-              ),
-            ),
-            SizedBox(height: 16),
-            SizedBox(
-              height: 140,
-              child: ListView.builder(
-                scrollDirection: Axis.horizontal,
-                itemCount: 5, // Matching the limit(5) from your CI4 controller
-                itemBuilder: (context, index) {
-                  return Container(
-                    width: 220,
-                    margin: EdgeInsets.only(right: 16),
-                    decoration: BoxDecoration(
-                      color: Color(0xFF121216),
-                      borderRadius: BorderRadius.circular(8),
-                      border: Border.all(color: Colors.white12),
-                    ),
-                    child: Stack(
-                      children: [
-                        // Thumbnail placeholder
-                        Positioned.fill(
-                          child: ClipRRect(
-                            borderRadius: BorderRadius.circular(8),
-                            child: Container(color: Color(0xFF1a1a24)),
-                          ),
-                        ),
-                        Center(
-                          child: Icon(
-                            Icons.play_circle_fill,
-                            color: Colors.white24,
-                            size: 50,
-                          ),
-                        ),
-                        Positioned(
-                          bottom: 0,
-                          left: 0,
-                          right: 0,
-                          child: Container(
-                            padding: EdgeInsets.all(8),
-                            decoration: BoxDecoration(
-                              gradient: LinearGradient(
-                                begin: Alignment.bottomCenter,
-                                end: Alignment.topCenter,
-                                colors: [Colors.black87, Colors.transparent],
-                              ),
-                            ),
-                            child: Text(
-                              "Episode ${index + 1}",
-                              style: TextStyle(
-                                color: Colors.white,
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-                  );
-                },
-              ),
+            // --- 2. HUD STATS DASHBOARD ---
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                _buildStatCard(
+                  "LEVEL",
+                  "42",
+                  Icons.military_tech,
+                  Color(0xFFFF0099),
+                ),
+                _buildStatCard(
+                  "UPTIME",
+                  "14h",
+                  Icons.timer_outlined,
+                  Color(0xFF00f0ff),
+                ),
+                _buildStatCard(
+                  "SECURE",
+                  "MAX",
+                  Icons.shield_outlined,
+                  Colors.greenAccent,
+                ),
+              ],
             ),
 
             SizedBox(height: 40),
 
-            // 3. System Disconnect (Logout)
+            // --- 3. RECENT HISTORY SECTION ---
+            _buildSectionHeader("RECENT ACTIVITY", Color(0xFF00f0ff)),
+            SizedBox(height: 16),
             SizedBox(
+              height: 160,
+              child: ListView.builder(
+                scrollDirection: Axis.horizontal,
+                itemCount: 5,
+                itemBuilder: (context, index) {
+                  return _buildHistoryCard(index);
+                },
+              ),
+            ),
+
+            SizedBox(height: 50),
+
+            // --- 4. DANGEROUS SYSTEM DISCONNECT ---
+            Container(
               width: double.infinity,
-              height: 50,
+              height: 55,
+              decoration: BoxDecoration(
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.redAccent.withOpacity(0.3),
+                    blurRadius: 15,
+                    offset: Offset(0, 5),
+                  ),
+                ],
+              ),
               child: ElevatedButton.icon(
                 style: ElevatedButton.styleFrom(
                   backgroundColor: Color(0xFF121216),
-                  side: BorderSide(color: Colors.redAccent),
+                  side: BorderSide(color: Colors.redAccent, width: 2),
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(8),
                   ),
@@ -193,13 +254,178 @@ class ProfileScreen extends StatelessWidget {
                   ),
                 ),
                 onPressed: () {
-                  // This translates your 'Auth::logout' route
                   Navigator.pushReplacementNamed(context, '/');
                 },
               ),
             ),
+
+            SizedBox(height: 20), // Bottom Padding
           ],
         ),
+      ),
+    );
+  }
+
+  // --- HELPER WIDGETS ---
+
+  // Glowing Section Header
+  Widget _buildSectionHeader(String title, Color color) {
+    return Row(
+      children: [
+        Container(
+          width: 4,
+          height: 18,
+          color: color,
+          margin: EdgeInsets.only(right: 8),
+        ),
+        Text(
+          title,
+          style: TextStyle(
+            color: Colors.white,
+            fontSize: 16,
+            fontWeight: FontWeight.bold,
+            letterSpacing: 2,
+            shadows: [Shadow(color: color.withOpacity(0.5), blurRadius: 10)],
+          ),
+        ),
+      ],
+    );
+  }
+
+  // Mini HUD Stat Cards
+  Widget _buildStatCard(
+    String title,
+    String value,
+    IconData icon,
+    Color color,
+  ) {
+    return Expanded(
+      child: Container(
+        margin: EdgeInsets.symmetric(horizontal: 4),
+        padding: EdgeInsets.symmetric(vertical: 12),
+        decoration: BoxDecoration(
+          color: Color(0xFF121216),
+          borderRadius: BorderRadius.circular(8),
+          border: Border.all(color: color.withOpacity(0.3)),
+          boxShadow: [
+            BoxShadow(
+              color: color.withOpacity(0.05),
+              blurRadius: 10,
+              offset: Offset(0, 4),
+            ),
+          ],
+        ),
+        child: Column(
+          children: [
+            Icon(icon, color: color, size: 20),
+            SizedBox(height: 8),
+            Text(
+              value,
+              style: TextStyle(
+                color: Colors.white,
+                fontSize: 18,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+            SizedBox(height: 2),
+            Text(
+              title,
+              style: TextStyle(
+                color: Colors.grey[500],
+                fontSize: 10,
+                letterSpacing: 1,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  // High-Tech History Cards with Progress Bars
+  Widget _buildHistoryCard(int index) {
+    double progress = 0.4 + (index * 0.15); // Fake progress
+
+    return Container(
+      width: 240,
+      margin: EdgeInsets.only(right: 16),
+      decoration: BoxDecoration(
+        color: Color(0xFF121216),
+        borderRadius: BorderRadius.circular(8),
+        border: Border.all(color: Colors.white12),
+        image: DecorationImage(
+          image: NetworkImage(
+            'https://picsum.photos/id/${250 + index}/400/200',
+          ),
+          fit: BoxFit.cover,
+          colorFilter: ColorFilter.mode(
+            Colors.black.withOpacity(0.5),
+            BlendMode.darken,
+          ),
+        ),
+      ),
+      child: Stack(
+        children: [
+          Center(
+            child: Icon(
+              Icons.play_circle_outline,
+              color: Colors.white.withOpacity(0.8),
+              size: 50,
+            ),
+          ),
+          Positioned(
+            bottom: 12,
+            left: 12,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  "Decrypted File 0${index + 1}",
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontWeight: FontWeight.bold,
+                    fontSize: 14,
+                  ),
+                ),
+                Text(
+                  "Log Timestamp: 0${index + 1}:45:00",
+                  style: TextStyle(color: Colors.grey[400], fontSize: 10),
+                ),
+              ],
+            ),
+          ),
+          // Neon Cyan Progress Bar
+          Positioned(
+            bottom: 0,
+            left: 0,
+            right: 0,
+            child: Container(
+              height: 4,
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.only(
+                  bottomLeft: Radius.circular(8),
+                  bottomRight: Radius.circular(8),
+                ),
+                color: Colors.white12,
+              ),
+              alignment: Alignment.centerLeft,
+              child: FractionallySizedBox(
+                widthFactor: progress > 1.0 ? 1.0 : progress,
+                child: Container(
+                  decoration: BoxDecoration(
+                    color: Color(0xFF00f0ff),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Color(0xFF00f0ff).withOpacity(0.8),
+                        blurRadius: 6,
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }
