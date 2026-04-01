@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'user/main_screen.dart';
 import 'admin/admin_main_screen.dart';
 
@@ -8,7 +9,6 @@ class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
 
   @override
-  // FIX 1: Changed return type to State<LoginScreen>
   State<LoginScreen> createState() => _LoginScreenState();
 }
 
@@ -18,7 +18,7 @@ class _LoginScreenState extends State<LoginScreen> {
 
   bool _isLoading = false;
 
-  void _showError(BuildContext context, String message) {
+  void _showError(String message) {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Row(
@@ -37,7 +37,7 @@ class _LoginScreenState extends State<LoginScreen> {
     );
   }
 
-  Future<void> loginUser(BuildContext context) async {
+  Future<void> loginUser() async {
     setState(() {
       _isLoading = true;
     });
@@ -51,7 +51,6 @@ class _LoginScreenState extends State<LoginScreen> {
         },
       );
 
-      // FIX 2: Check if the screen is still visible before using BuildContext!
       if (!mounted) return;
 
       if (response.statusCode == 200) {
@@ -59,6 +58,17 @@ class _LoginScreenState extends State<LoginScreen> {
 
         if (responseData['status'] == 200) {
           String userRole = responseData['data']['role'];
+          String username = responseData['data']['username'];
+          int userId = int.parse(responseData['data']['id_user'].toString());
+
+          // --- SAVE CREDENTIALS TO DEVICE ---
+          final prefs = await SharedPreferences.getInstance();
+          await prefs.setString('role', userRole);
+          await prefs.setString('username', username);
+          await prefs.setInt('id_user', userId);
+          await prefs.setBool('isLoggedIn', true);
+
+          if (!mounted) return;
 
           if (userRole == 'admin') {
             Navigator.pushReplacement(
@@ -72,15 +82,14 @@ class _LoginScreenState extends State<LoginScreen> {
             );
           }
         } else {
-          _showError(context, responseData['message']);
+          _showError(responseData['message']);
         }
       } else {
-        _showError(context, "Server Error: ${response.statusCode}");
+        _showError("Server Error: ${response.statusCode}");
       }
     } catch (e) {
-      // Also protect the catch block with a mounted check
       if (mounted) {
-        _showError(context, "Connection failed: $e");
+        _showError("Connection failed: $e");
       }
     } finally {
       if (mounted) {
@@ -101,7 +110,6 @@ class _LoginScreenState extends State<LoginScreen> {
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              // --- Glowing Logo ---
               Container(
                 width: 100,
                 height: 100,
@@ -109,7 +117,6 @@ class _LoginScreenState extends State<LoginScreen> {
                   shape: BoxShape.circle,
                   boxShadow: [
                     BoxShadow(
-                      // FIX 3: Replaced .withOpacity() with .withValues(alpha: ...)
                       color: Color(0xFFb026ff).withValues(alpha: 0.4),
                       blurRadius: 30,
                       spreadRadius: 2,
@@ -129,7 +136,6 @@ class _LoginScreenState extends State<LoginScreen> {
                 ),
               ),
               SizedBox(height: 24),
-
               SizedBox(height: 8),
               Text(
                 "SECURE SYSTEM PORTAL",
@@ -141,8 +147,6 @@ class _LoginScreenState extends State<LoginScreen> {
                 ),
               ),
               SizedBox(height: 50),
-
-              // --- Styled Inputs ---
               TextField(
                 controller: usernameController,
                 style: TextStyle(color: Colors.white),
@@ -187,8 +191,6 @@ class _LoginScreenState extends State<LoginScreen> {
                 ),
               ),
               SizedBox(height: 40),
-
-              // --- Glowing Submit Button ---
               Container(
                 width: double.infinity,
                 height: 55,
@@ -196,7 +198,6 @@ class _LoginScreenState extends State<LoginScreen> {
                   borderRadius: BorderRadius.circular(12),
                   boxShadow: [
                     BoxShadow(
-                      // FIX 3: Replaced .withOpacity() with .withValues(alpha: ...)
                       color: Color(0xFFFF0099).withValues(alpha: 0.4),
                       blurRadius: 15,
                       offset: Offset(0, 5),
@@ -211,7 +212,7 @@ class _LoginScreenState extends State<LoginScreen> {
                     ),
                     elevation: 0,
                   ),
-                  onPressed: _isLoading ? null : () => loginUser(context),
+                  onPressed: _isLoading ? null : loginUser,
                   child: _isLoading
                       ? SizedBox(
                           height: 24,

@@ -1,9 +1,60 @@
 import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import '../../services/api_service.dart';
 import 'edit_profile_screen.dart';
 import 'settings_screen.dart';
 
-class ProfileScreen extends StatelessWidget {
+class ProfileScreen extends StatefulWidget {
   const ProfileScreen({super.key});
+
+  @override
+  State<ProfileScreen> createState() => _ProfileScreenState();
+}
+
+class _ProfileScreenState extends State<ProfileScreen> {
+  String _username = "LOADING...";
+  String _role = "LOADING";
+  String _userId = "0000";
+  String _avatar = "";
+
+  @override
+  void initState() {
+    super.initState();
+    _loadUserData();
+  }
+
+  Future<void> _loadUserData() async {
+    final prefs = await SharedPreferences.getInstance();
+    final int? userId = prefs.getInt('id_user');
+
+    if (userId != null) {
+      try {
+        final response = await ApiService.getUserProfile(userId);
+        if (response['status'] == 200) {
+          setState(() {
+            _username = response['data']['user']['username'];
+            _role = response['data']['user']['role'].toString().toUpperCase();
+            _userId = userId.toString();
+            _avatar = response['data']['user']['avatar'] ?? "";
+          });
+        }
+      } catch (e) {
+        setState(() {
+          _username = prefs.getString('username') ?? "UNKNOWN_USER";
+          _role = prefs.getString('role')?.toUpperCase() ?? "STANDARD";
+          _userId = userId.toString();
+        });
+      }
+    }
+  }
+
+  Future<void> _logout() async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.clear();
+    if (mounted) {
+      Navigator.pushReplacementNamed(context, '/');
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -19,7 +70,9 @@ class ProfileScreen extends StatelessWidget {
             letterSpacing: 4,
             fontWeight: FontWeight.w900,
             shadows: [
-              Shadow(color: Color(0xFF00f0ff).withOpacity(0.5), blurRadius: 10),
+              Shadow(
+                  color: Color(0xFF00f0ff).withValues(alpha: 0.5),
+                  blurRadius: 10),
             ],
           ),
         ),
@@ -40,11 +93,11 @@ class ProfileScreen extends StatelessWidget {
             decoration: BoxDecoration(
               boxShadow: [
                 BoxShadow(
-                  color: Color(0xFF00f0ff).withOpacity(0.5),
+                  color: Color(0xFF00f0ff).withValues(alpha: 0.5),
                   blurRadius: 10,
                 ),
               ],
-              color: Color(0xFF00f0ff).withOpacity(0.3),
+              color: Color(0xFF00f0ff).withValues(alpha: 0.3),
             ),
             height: 1.0,
           ),
@@ -72,7 +125,7 @@ class ProfileScreen extends StatelessWidget {
                           ),
                           boxShadow: [
                             BoxShadow(
-                              color: Color(0xFF00f0ff).withOpacity(0.2),
+                              color: Color(0xFF00f0ff).withValues(alpha: 0.2),
                               blurRadius: 20,
                               spreadRadius: 5,
                             ),
@@ -81,9 +134,10 @@ class ProfileScreen extends StatelessWidget {
                         child: CircleAvatar(
                           radius: 50,
                           backgroundColor: Color(0xFF121216),
-                          backgroundImage: NetworkImage(
-                            'https://i.pravatar.cc/150?img=11',
-                          ),
+                          backgroundImage: _avatar.isNotEmpty
+                              ? NetworkImage("${ApiService.imageUrl}$_avatar")
+                              : NetworkImage('https://i.pravatar.cc/150?img=11')
+                                  as ImageProvider,
                         ),
                       ),
                       // Online Status Indicator
@@ -107,7 +161,7 @@ class ProfileScreen extends StatelessWidget {
                   ),
                   SizedBox(height: 16),
                   Text(
-                    "KOBO KANAERU",
+                    _username.toUpperCase(),
                     style: TextStyle(
                       color: Colors.white,
                       fontSize: 24,
@@ -115,12 +169,12 @@ class ProfileScreen extends StatelessWidget {
                       letterSpacing: 3,
                       shadows: [
                         Shadow(color: Color(0xFFb026ff), blurRadius: 10),
-                      ], // Purple glow
+                      ],
                     ),
                   ),
                   SizedBox(height: 4),
                   Text(
-                    "ID: #8934-SYS  |  Access: STANDARD",
+                    "ID: #$_userId-SYS  |  Access: $_role",
                     style: TextStyle(
                       color: Color(0xFF00f0ff),
                       fontSize: 12,
@@ -137,7 +191,7 @@ class ProfileScreen extends StatelessWidget {
                     decoration: BoxDecoration(
                       boxShadow: [
                         BoxShadow(
-                          color: Color(0xFFb026ff).withOpacity(0.3),
+                          color: Color(0xFFb026ff).withValues(alpha: 0.3),
                           blurRadius: 15,
                           offset: Offset(0, 5),
                         ),
@@ -164,13 +218,16 @@ class ProfileScreen extends StatelessWidget {
                           letterSpacing: 1,
                         ),
                       ),
-                      onPressed: () {
-                        Navigator.push(
+                      onPressed: () async {
+                        final result = await Navigator.push(
                           context,
                           MaterialPageRoute(
                             builder: (context) => EditProfileScreen(),
                           ),
                         );
+                        if (result == true) {
+                          _loadUserData();
+                        }
                       },
                     ),
                   ),
@@ -230,7 +287,7 @@ class ProfileScreen extends StatelessWidget {
               decoration: BoxDecoration(
                 boxShadow: [
                   BoxShadow(
-                    color: Colors.redAccent.withOpacity(0.3),
+                    color: Colors.redAccent.withValues(alpha: 0.3),
                     blurRadius: 15,
                     offset: Offset(0, 5),
                   ),
@@ -253,9 +310,7 @@ class ProfileScreen extends StatelessWidget {
                     letterSpacing: 2,
                   ),
                 ),
-                onPressed: () {
-                  Navigator.pushReplacementNamed(context, '/');
-                },
+                onPressed: _logout,
               ),
             ),
 
@@ -285,7 +340,9 @@ class ProfileScreen extends StatelessWidget {
             fontSize: 16,
             fontWeight: FontWeight.bold,
             letterSpacing: 2,
-            shadows: [Shadow(color: color.withOpacity(0.5), blurRadius: 10)],
+            shadows: [
+              Shadow(color: color.withValues(alpha: 0.5), blurRadius: 10)
+            ],
           ),
         ),
       ],
@@ -306,10 +363,10 @@ class ProfileScreen extends StatelessWidget {
         decoration: BoxDecoration(
           color: Color(0xFF121216),
           borderRadius: BorderRadius.circular(8),
-          border: Border.all(color: color.withOpacity(0.3)),
+          border: Border.all(color: color.withValues(alpha: 0.3)),
           boxShadow: [
             BoxShadow(
-              color: color.withOpacity(0.05),
+              color: color.withValues(alpha: 0.05),
               blurRadius: 10,
               offset: Offset(0, 4),
             ),
@@ -359,7 +416,7 @@ class ProfileScreen extends StatelessWidget {
           ),
           fit: BoxFit.cover,
           colorFilter: ColorFilter.mode(
-            Colors.black.withOpacity(0.5),
+            Colors.black.withValues(alpha: 0.5),
             BlendMode.darken,
           ),
         ),
@@ -369,7 +426,7 @@ class ProfileScreen extends StatelessWidget {
           Center(
             child: Icon(
               Icons.play_circle_outline,
-              color: Colors.white.withOpacity(0.8),
+              color: Colors.white.withValues(alpha: 0.8),
               size: 50,
             ),
           ),
@@ -416,7 +473,7 @@ class ProfileScreen extends StatelessWidget {
                     color: Color(0xFF00f0ff),
                     boxShadow: [
                       BoxShadow(
-                        color: Color(0xFF00f0ff).withOpacity(0.8),
+                        color: Color(0xFF00f0ff).withValues(alpha: 0.8),
                         blurRadius: 6,
                       ),
                     ],

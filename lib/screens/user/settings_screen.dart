@@ -1,8 +1,12 @@
 import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import '../../services/api_service.dart';
 
 class SettingsScreen extends StatefulWidget {
+  const SettingsScreen({super.key});
+
   @override
-  _SettingsScreenState createState() => _SettingsScreenState();
+  State<SettingsScreen> createState() => _SettingsScreenState();
 }
 
 class _SettingsScreenState extends State<SettingsScreen> {
@@ -13,7 +17,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
   void _showDeleteConfirmation() {
     showDialog(
       context: context,
-      barrierColor: Colors.black.withOpacity(0.8), // Darkens background heavily
+      barrierColor:
+          Colors.black.withValues(alpha: 0.8), // Darkens background heavily
       builder: (BuildContext context) {
         return Dialog(
           backgroundColor: Colors.transparent,
@@ -25,7 +30,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
               border: Border.all(color: Colors.redAccent, width: 2),
               boxShadow: [
                 BoxShadow(
-                  color: Colors.red.withOpacity(0.3),
+                  color: Colors.red.withValues(alpha: 0.3),
                   blurRadius: 30,
                   spreadRadius: 5,
                 ),
@@ -38,7 +43,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 Container(
                   padding: EdgeInsets.all(16),
                   decoration: BoxDecoration(
-                    color: Colors.red.withOpacity(0.1),
+                    color: Colors.red.withValues(alpha: 0.1),
                     shape: BoxShape.circle,
                   ),
                   child: Icon(
@@ -109,7 +114,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
                       height: 45,
                       child: ElevatedButton(
                         style: ElevatedButton.styleFrom(
-                          backgroundColor: Colors.redAccent.withOpacity(0.2),
+                          backgroundColor: Colors.redAccent.withValues(
+                            alpha: 0.2,
+                          ),
                           elevation: 0,
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(8),
@@ -124,13 +131,30 @@ class _SettingsScreenState extends State<SettingsScreen> {
                             letterSpacing: 1,
                           ),
                         ),
-                        onPressed: () {
-                          Navigator.of(context).pop(); // Close dialog
-                          // Route user out
-                          Navigator.of(context).pushNamedAndRemoveUntil(
-                            '/',
-                            (Route<dynamic> route) => false,
-                          );
+                        onPressed: () async {
+                          final navigator = Navigator.of(context);
+                          navigator.pop(); // Close dialog immediately
+
+                          try {
+                            final prefs = await SharedPreferences.getInstance();
+                            int? userId = prefs.getInt('id_user');
+
+                            if (userId != null) {
+                              await ApiService.deleteAccount(userId);
+                            }
+
+                            await prefs.clear();
+
+                            if (mounted) {
+                              navigator.pushNamedAndRemoveUntil(
+                                '/',
+                                (Route<dynamic> route) => false,
+                              );
+                            }
+                          } catch (e) {
+                            ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+                                content: Text("Failed to delete account")));
+                          }
                         },
                       ),
                     ),
@@ -166,7 +190,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
         bottom: PreferredSize(
           preferredSize: Size.fromHeight(1.0),
           child: Container(
-            color: Color(0xFFb026ff).withOpacity(0.5),
+            color: Color(0xFFb026ff).withValues(alpha: 0.5),
             height: 1.0,
           ),
         ),
@@ -225,16 +249,17 @@ class _SettingsScreenState extends State<SettingsScreen> {
           _buildSectionHeader("DANGER ZONE", Colors.redAccent),
           Container(
             decoration: BoxDecoration(
-              color: Colors.red.withOpacity(0.05),
+              color: Colors.red.withValues(alpha: 0.05),
               borderRadius: BorderRadius.circular(12),
-              border: Border.all(color: Colors.redAccent.withOpacity(0.5)),
+              border:
+                  Border.all(color: Colors.redAccent.withValues(alpha: 0.5)),
             ),
             child: ListTile(
               contentPadding: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
               leading: Container(
                 padding: EdgeInsets.all(8),
                 decoration: BoxDecoration(
-                  color: Colors.red.withOpacity(0.1),
+                  color: Colors.red.withValues(alpha: 0.1),
                   shape: BoxShape.circle,
                 ),
                 child: Icon(Icons.delete_forever, color: Colors.redAccent),
@@ -250,7 +275,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
               subtitle: Text(
                 "Permanently erase your identity",
                 style: TextStyle(
-                  color: Colors.redAccent.withOpacity(0.7),
+                  color: Colors.redAccent.withValues(alpha: 0.7),
                   fontSize: 12,
                 ),
               ),
@@ -284,7 +309,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
     return Divider(
       height: 1,
       thickness: 1,
-      color: Colors.white.withOpacity(0.05),
+      color: Colors.white.withValues(alpha: 0.05),
       indent: 50,
       endIndent: 16,
     );
@@ -326,7 +351,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
       secondary: Icon(icon, color: Colors.white70),
       title: Text(title, style: TextStyle(color: Colors.white, fontSize: 14)),
       value: currentValue,
-      activeColor: Color(0xFFFF0099),
+      activeThumbColor: Color(0xFFFF0099),
       inactiveThumbColor: Colors.grey,
       inactiveTrackColor: Colors.white12,
       onChanged: onChanged,

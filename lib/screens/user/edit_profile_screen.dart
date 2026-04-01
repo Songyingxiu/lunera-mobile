@@ -1,48 +1,99 @@
+import 'dart:io';
 import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:image_picker/image_picker.dart';
+import '../../services/api_service.dart';
 
 class EditProfileScreen extends StatefulWidget {
+  const EditProfileScreen({super.key});
+
   @override
-  _EditProfileScreenState createState() => _EditProfileScreenState();
+  State<EditProfileScreen> createState() => _EditProfileScreenState();
 }
 
 class _EditProfileScreenState extends State<EditProfileScreen> {
-  final TextEditingController _usernameController = TextEditingController(
-    text: "Kobo Kanaeru",
-  );
+  final TextEditingController _usernameController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
 
+  File? _selectedImage;
+  final ImagePicker _picker = ImagePicker();
   bool _isLoading = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadCurrentData();
+  }
+
+  Future<void> _loadCurrentData() async {
+    final prefs = await SharedPreferences.getInstance();
+    setState(() {
+      _usernameController.text = prefs.getString('username') ?? '';
+    });
+  }
+
+  Future<void> _pickImage() async {
+    final pickedFile = await _picker.pickImage(source: ImageSource.gallery);
+    if (pickedFile != null) {
+      setState(() {
+        _selectedImage = File(pickedFile.path);
+      });
+    }
+  }
 
   void _saveProfile() async {
     setState(() => _isLoading = true);
 
-    // Simulate an API call delay
-    await Future.delayed(Duration(seconds: 2));
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      int? userId = prefs.getInt('id_user');
 
-    // Here you would normally do an http.post or http.put to your CI4 backend
-    // e.g., await ApiService.updateProfile(_usernameController.text, _passwordController.text);
+      if (userId != null) {
+        final response = await ApiService.updateProfile(
+          userId,
+          _usernameController.text,
+          _passwordController.text,
+          _selectedImage,
+        );
 
-    setState(() => _isLoading = false);
+        if (!mounted) return;
 
-    // Show success message and go back
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Row(
-          children: [
-            Icon(Icons.check_circle_outline, color: Colors.white),
-            SizedBox(width: 10),
-            Text(
-              "Identity updated successfully!",
-              style: TextStyle(color: Colors.white),
+        if (response['status'] == 200) {
+          await prefs.setString('username', _usernameController.text);
+
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Row(
+                children: [
+                  Icon(Icons.check_circle_outline, color: Colors.white),
+                  SizedBox(width: 10),
+                  Text(
+                    response['message'] ?? "Updated successfully",
+                    style: TextStyle(color: Colors.white),
+                  ),
+                ],
+              ),
+              backgroundColor: Color(0xFFb026ff),
+              behavior: SnackBarBehavior.floating,
             ),
-          ],
-        ),
-        backgroundColor: Color(0xFFb026ff), // Purple success color
-        behavior: SnackBarBehavior.floating,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-      ),
-    );
-    Navigator.pop(context); // Go back to the Profile screen
+          );
+
+          Navigator.pop(context, true);
+        } else {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text("Error: ${response['message']}")),
+          );
+        }
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text("Connection Error")),
+        );
+      }
+    } finally {
+      if (mounted) setState(() => _isLoading = false);
+    }
   }
 
   @override
@@ -59,7 +110,9 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
             fontWeight: FontWeight.bold,
             letterSpacing: 2,
             shadows: [
-              Shadow(color: Color(0xFF00f0ff).withOpacity(0.5), blurRadius: 10),
+              Shadow(
+                  color: Color(0xFF00f0ff).withValues(alpha: 0.5),
+                  blurRadius: 10),
             ],
           ),
         ),
@@ -67,7 +120,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
         bottom: PreferredSize(
           preferredSize: Size.fromHeight(1.0),
           child: Container(
-            color: Color(0xFF00f0ff).withOpacity(0.3),
+            color: Color(0xFF00f0ff).withValues(alpha: 0.3),
             height: 1.0,
           ),
         ),
@@ -88,7 +141,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                     border: Border.all(color: Color(0xFF00f0ff), width: 2),
                     boxShadow: [
                       BoxShadow(
-                        color: Color(0xFF00f0ff).withOpacity(0.2),
+                        color: Color(0xFF00f0ff).withValues(alpha: 0.2),
                         blurRadius: 20,
                         spreadRadius: 5,
                       ),
@@ -97,9 +150,9 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                   child: CircleAvatar(
                     radius: 60,
                     backgroundColor: Color(0xFF121216),
-                    backgroundImage: NetworkImage(
-                      'https://i.pravatar.cc/150?img=11',
-                    ),
+                    backgroundImage: _selectedImage != null
+                        ? FileImage(_selectedImage!) as ImageProvider
+                        : NetworkImage('https://i.pravatar.cc/150?img=11'),
                   ),
                 ),
                 // Glowing Camera Icon
@@ -111,16 +164,14 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                     border: Border.all(color: Color(0xFF050508), width: 3),
                     boxShadow: [
                       BoxShadow(
-                        color: Color(0xFFFF0099).withOpacity(0.5),
+                        color: Color(0xFFFF0099).withValues(alpha: 0.5),
                         blurRadius: 10,
                         spreadRadius: 1,
                       ),
                     ],
                   ),
                   child: InkWell(
-                    onTap: () {
-                      // Logic to pick image from gallery
-                    },
+                    onTap: _pickImage,
                     child: Icon(
                       Icons.camera_alt,
                       color: Colors.white,
@@ -176,7 +227,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                 borderRadius: BorderRadius.circular(12),
                 boxShadow: [
                   BoxShadow(
-                    color: Color(0xFF00f0ff).withOpacity(0.3),
+                    color: Color(0xFF00f0ff).withValues(alpha: 0.3),
                     blurRadius: 15,
                     offset: Offset(0, 5),
                   ),
@@ -191,9 +242,8 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                   ),
                   elevation: 0,
                 ),
-                icon: _isLoading
-                    ? SizedBox.shrink()
-                    : Icon(Icons.save, size: 22),
+                icon:
+                    _isLoading ? SizedBox.shrink() : Icon(Icons.save, size: 22),
                 label: _isLoading
                     ? SizedBox(
                         height: 24,
