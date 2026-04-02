@@ -1,3 +1,4 @@
+import 'dart:convert'; // 🚀 ADDED: Required to read the saved history
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../../services/api_service.dart';
@@ -16,6 +17,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
   String _role = "LOADING";
   String _userId = "0000";
   String _avatar = "";
+  
+  // 🚀 ADDED: List to store your real history data
+  List<Map<String, dynamic>> _historyItems = [];
 
   @override
   void initState() {
@@ -26,6 +30,14 @@ class _ProfileScreenState extends State<ProfileScreen> {
   Future<void> _loadUserData() async {
     final prefs = await SharedPreferences.getInstance();
     final int? userId = prefs.getInt('id_user');
+
+    // 🚀 ADDED: Fetch the locally saved history
+    List<String> historyStrings = prefs.getStringList('watch_history') ?? [];
+    setState(() {
+      _historyItems = historyStrings
+          .map((item) => jsonDecode(item) as Map<String, dynamic>)
+          .toList();
+    });
 
     if (userId != null) {
       try {
@@ -46,11 +58,16 @@ class _ProfileScreenState extends State<ProfileScreen> {
           _username = prefs.getString('username') ?? "UNKNOWN_USER";
           _role = prefs.getString('role')?.toUpperCase() ?? "STANDARD";
           _userId = userId.toString();
-          _avatar =
-              prefs.getString('avatar') ?? ""; // 🚀 NOW IT REMEMBERS THE IMAGE!
+          _avatar = prefs.getString('avatar') ?? ""; // 🚀 NOW IT REMEMBERS THE IMAGE!
         });
       }
     }
+  }
+
+  // 🚀 ADDED: Helper to handle both external and internal images
+  String _getImageUrl(String path) {
+    if (path.startsWith('http')) return path;
+    return "${ApiService.imageUrl}$path";
   }
 
   Future<void> _logout() async {
@@ -64,11 +81,11 @@ class _ProfileScreenState extends State<ProfileScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Color(0xFF050508),
+      backgroundColor: const Color(0xFF050508),
       appBar: AppBar(
-        backgroundColor: Color(0xFF050508),
+        backgroundColor: const Color(0xFF050508),
         elevation: 0,
-        title: Text(
+        title: const Text(
           "USER IDENTITY",
           style: TextStyle(
             color: Colors.white,
@@ -76,40 +93,40 @@ class _ProfileScreenState extends State<ProfileScreen> {
             fontWeight: FontWeight.w900,
             shadows: [
               Shadow(
-                  color: Color(0xFF00f0ff).withValues(alpha: 0.5),
+                  color: Color(0xFF00f0ff),
                   blurRadius: 10),
             ],
           ),
         ),
         actions: [
           IconButton(
-            icon: Icon(Icons.settings_outlined, color: Color(0xFF00f0ff)),
+            icon: const Icon(Icons.settings_outlined, color: Color(0xFF00f0ff)),
             onPressed: () {
               Navigator.push(
                 context,
-                MaterialPageRoute(builder: (context) => SettingsScreen()),
+                MaterialPageRoute(builder: (context) => const SettingsScreen()),
               );
             },
           ),
         ],
         bottom: PreferredSize(
-          preferredSize: Size.fromHeight(1.0),
+          preferredSize: const Size.fromHeight(1.0),
           child: Container(
             decoration: BoxDecoration(
               boxShadow: [
                 BoxShadow(
-                  color: Color(0xFF00f0ff).withValues(alpha: 0.5),
+                  color: const Color(0xFF00f0ff).withOpacity(0.5),
                   blurRadius: 10,
                 ),
               ],
-              color: Color(0xFF00f0ff).withValues(alpha: 0.3),
+              color: const Color(0xFF00f0ff).withOpacity(0.3),
             ),
             height: 1.0,
           ),
         ),
       ),
       body: SingleChildScrollView(
-        padding: EdgeInsets.symmetric(horizontal: 16, vertical: 24),
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 24),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -121,16 +138,16 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     alignment: Alignment.bottomRight,
                     children: [
                       Container(
-                        padding: EdgeInsets.all(4),
+                        padding: const EdgeInsets.all(4),
                         decoration: BoxDecoration(
                           shape: BoxShape.circle,
                           border: Border.all(
-                            color: Color(0xFF00f0ff),
+                            color: const Color(0xFF00f0ff),
                             width: 2,
                           ),
                           boxShadow: [
                             BoxShadow(
-                              color: Color(0xFF00f0ff).withValues(alpha: 0.2),
+                              color: const Color(0xFF00f0ff).withOpacity(0.2),
                               blurRadius: 20,
                               spreadRadius: 5,
                             ),
@@ -161,8 +178,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                 )
                               : const Center(
                                   child: Icon(
-                                    Icons
-                                        .person_outline, // Built-in default user icon
+                                    Icons.person_outline, // Built-in default user icon
                                     color: Color(
                                         0xFF00f0ff), // Matches your neon cyan
                                     size: 50,
@@ -174,25 +190,25 @@ class _ProfileScreenState extends State<ProfileScreen> {
                       Container(
                         height: 20,
                         width: 20,
-                        margin: EdgeInsets.only(bottom: 4, right: 4),
+                        margin: const EdgeInsets.only(bottom: 4, right: 4),
                         decoration: BoxDecoration(
                           color: Colors.greenAccent,
                           shape: BoxShape.circle,
                           border: Border.all(
-                            color: Color(0xFF050508),
+                            color: const Color(0xFF050508),
                             width: 4,
                           ),
                           boxShadow: [
-                            BoxShadow(color: Colors.greenAccent, blurRadius: 8),
+                            const BoxShadow(color: Colors.greenAccent, blurRadius: 8),
                           ],
                         ),
                       ),
                     ],
                   ),
-                  SizedBox(height: 16),
+                  const SizedBox(height: 16),
                   Text(
                     _username.toUpperCase(),
-                    style: TextStyle(
+                    style: const TextStyle(
                       color: Colors.white,
                       fontSize: 24,
                       fontWeight: FontWeight.w900,
@@ -202,17 +218,17 @@ class _ProfileScreenState extends State<ProfileScreen> {
                       ],
                     ),
                   ),
-                  SizedBox(height: 4),
+                  const SizedBox(height: 4),
                   Text(
                     "ID: #$_userId-SYS  |  Access: $_role",
-                    style: TextStyle(
+                    style: const TextStyle(
                       color: Color(0xFF00f0ff),
                       fontSize: 12,
                       fontWeight: FontWeight.bold,
                       letterSpacing: 1,
                     ),
                   ),
-                  SizedBox(height: 24),
+                  const SizedBox(height: 24),
 
                   // Glowing Edit Button
                   Container(
@@ -221,26 +237,26 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     decoration: BoxDecoration(
                       boxShadow: [
                         BoxShadow(
-                          color: Color(0xFFb026ff).withValues(alpha: 0.3),
+                          color: const Color(0xFFb026ff).withOpacity(0.3),
                           blurRadius: 15,
-                          offset: Offset(0, 5),
+                          offset: const Offset(0, 5),
                         ),
                       ],
                     ),
                     child: ElevatedButton.icon(
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: Color(0xFF121216),
-                        side: BorderSide(color: Color(0xFFb026ff)),
+                        backgroundColor: const Color(0xFF121216),
+                        side: const BorderSide(color: Color(0xFFb026ff)),
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(8),
                         ),
                       ),
-                      icon: Icon(
+                      icon: const Icon(
                         Icons.edit_outlined,
                         color: Color(0xFFb026ff),
                         size: 18,
                       ),
-                      label: Text(
+                      label: const Text(
                         "EDIT IDENTITY",
                         style: TextStyle(
                           color: Colors.white,
@@ -252,7 +268,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                         final result = await Navigator.push(
                           context,
                           MaterialPageRoute(
-                            builder: (context) => EditProfileScreen(),
+                            builder: (context) => const EditProfileScreen(),
                           ),
                         );
                         if (result == true) {
@@ -265,7 +281,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
               ),
             ),
 
-            SizedBox(height: 40),
+            const SizedBox(height: 40),
 
             // --- 2. HUD STATS DASHBOARD ---
             Row(
@@ -275,13 +291,13 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   "LEVEL",
                   "42",
                   Icons.military_tech,
-                  Color(0xFFFF0099),
+                  const Color(0xFFFF0099),
                 ),
                 _buildStatCard(
                   "UPTIME",
                   "14h",
                   Icons.timer_outlined,
-                  Color(0xFF00f0ff),
+                  const Color(0xFF00f0ff),
                 ),
                 _buildStatCard(
                   "SECURE",
@@ -292,23 +308,27 @@ class _ProfileScreenState extends State<ProfileScreen> {
               ],
             ),
 
-            SizedBox(height: 40),
+            const SizedBox(height: 40),
 
             // --- 3. RECENT HISTORY SECTION ---
-            _buildSectionHeader("RECENT ACTIVITY", Color(0xFF00f0ff)),
-            SizedBox(height: 16),
-            SizedBox(
-              height: 160,
-              child: ListView.builder(
-                scrollDirection: Axis.horizontal,
-                itemCount: 5,
-                itemBuilder: (context, index) {
-                  return _buildHistoryCard(index);
-                },
-              ),
-            ),
+            _buildSectionHeader("RECENT ACTIVITY", const Color(0xFF00f0ff)),
+            const SizedBox(height: 16),
+            
+            // 🚀 MODIFIED: This now shows your REAL history items
+            _historyItems.isEmpty 
+              ? const Center(child: Text("NO RECENT LOGS", style: TextStyle(color: Colors.white24)))
+              : SizedBox(
+                  height: 160,
+                  child: ListView.builder(
+                    scrollDirection: Axis.horizontal,
+                    itemCount: _historyItems.length,
+                    itemBuilder: (context, index) {
+                      return _buildHistoryCard(_historyItems[index], index);
+                    },
+                  ),
+                ),
 
-            SizedBox(height: 50),
+            const SizedBox(height: 50),
 
             // --- 4. DANGEROUS SYSTEM DISCONNECT ---
             Container(
@@ -317,22 +337,22 @@ class _ProfileScreenState extends State<ProfileScreen> {
               decoration: BoxDecoration(
                 boxShadow: [
                   BoxShadow(
-                    color: Colors.redAccent.withValues(alpha: 0.3),
+                    color: Colors.redAccent.withOpacity(0.3),
                     blurRadius: 15,
-                    offset: Offset(0, 5),
+                    offset: const Offset(0, 5),
                   ),
                 ],
               ),
               child: ElevatedButton.icon(
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: Color(0xFF121216),
-                  side: BorderSide(color: Colors.redAccent, width: 2),
+                  backgroundColor: const Color(0xFF121216),
+                  side: const BorderSide(color: Colors.redAccent, width: 2),
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(8),
                   ),
                 ),
-                icon: Icon(Icons.power_settings_new, color: Colors.redAccent),
-                label: Text(
+                icon: const Icon(Icons.power_settings_new, color: Colors.redAccent),
+                label: const Text(
                   "SYSTEM DISCONNECT",
                   style: TextStyle(
                     color: Colors.redAccent,
@@ -344,16 +364,15 @@ class _ProfileScreenState extends State<ProfileScreen> {
               ),
             ),
 
-            SizedBox(height: 20), // Bottom Padding
+            const SizedBox(height: 20), // Bottom Padding
           ],
         ),
       ),
     );
   }
 
-  // --- HELPER WIDGETS ---
+  // --- HELPER WIDGETS (STAYING EXACTLY THE SAME) ---
 
-  // Glowing Section Header
   Widget _buildSectionHeader(String title, Color color) {
     return Row(
       children: [
@@ -361,7 +380,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
           width: 4,
           height: 18,
           color: color,
-          margin: EdgeInsets.only(right: 8),
+          margin: const EdgeInsets.only(right: 8),
         ),
         Text(
           title,
@@ -371,7 +390,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
             fontWeight: FontWeight.bold,
             letterSpacing: 2,
             shadows: [
-              Shadow(color: color.withValues(alpha: 0.5), blurRadius: 10)
+              Shadow(color: color.withOpacity(0.5), blurRadius: 10)
             ],
           ),
         ),
@@ -379,7 +398,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
     );
   }
 
-  // Mini HUD Stat Cards
   Widget _buildStatCard(
     String title,
     String value,
@@ -388,33 +406,33 @@ class _ProfileScreenState extends State<ProfileScreen> {
   ) {
     return Expanded(
       child: Container(
-        margin: EdgeInsets.symmetric(horizontal: 4),
-        padding: EdgeInsets.symmetric(vertical: 12),
+        margin: const EdgeInsets.symmetric(horizontal: 4),
+        padding: const EdgeInsets.symmetric(vertical: 12),
         decoration: BoxDecoration(
-          color: Color(0xFF121216),
+          color: const Color(0xFF121216),
           borderRadius: BorderRadius.circular(8),
-          border: Border.all(color: color.withValues(alpha: 0.3)),
+          border: Border.all(color: color.withOpacity(0.3)),
           boxShadow: [
             BoxShadow(
-              color: color.withValues(alpha: 0.05),
+              color: color.withOpacity(0.05),
               blurRadius: 10,
-              offset: Offset(0, 4),
+              offset: const Offset(0, 4),
             ),
           ],
         ),
         child: Column(
           children: [
             Icon(icon, color: color, size: 20),
-            SizedBox(height: 8),
+            const SizedBox(height: 8),
             Text(
               value,
-              style: TextStyle(
+              style: const TextStyle(
                 color: Colors.white,
                 fontSize: 18,
                 fontWeight: FontWeight.bold,
               ),
             ),
-            SizedBox(height: 2),
+            const SizedBox(height: 2),
             Text(
               title,
               style: TextStyle(
@@ -429,24 +447,23 @@ class _ProfileScreenState extends State<ProfileScreen> {
     );
   }
 
-  // High-Tech History Cards with Progress Bars
-  Widget _buildHistoryCard(int index) {
-    double progress = 0.4 + (index * 0.15); // Fake progress
+  // 🚀 MODIFIED: History card now accepts real DATA
+  Widget _buildHistoryCard(Map<String, dynamic> data, int index) {
+    double progress = 0.4 + (index * 0.15); 
 
     return Container(
       width: 240,
-      margin: EdgeInsets.only(right: 16),
+      margin: const EdgeInsets.only(right: 16),
       decoration: BoxDecoration(
-        color: Color(0xFF121216),
+        color: const Color(0xFF121216),
         borderRadius: BorderRadius.circular(8),
         border: Border.all(color: Colors.white12),
         image: DecorationImage(
-          image: NetworkImage(
-            'https://picsum.photos/id/${250 + index}/400/200',
-          ),
+          // 🚀 USES REAL THUMBNAIL FROM SAVED DATA
+          image: NetworkImage(_getImageUrl(data['image'] ?? "")),
           fit: BoxFit.cover,
           colorFilter: ColorFilter.mode(
-            Colors.black.withValues(alpha: 0.5),
+            Colors.black.withOpacity(0.5),
             BlendMode.darken,
           ),
         ),
@@ -456,7 +473,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
           Center(
             child: Icon(
               Icons.play_circle_outline,
-              color: Colors.white.withValues(alpha: 0.8),
+              color: Colors.white.withOpacity(0.8),
               size: 50,
             ),
           ),
@@ -467,15 +484,15 @@ class _ProfileScreenState extends State<ProfileScreen> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  "Decrypted File 0${index + 1}",
-                  style: TextStyle(
+                  data['title'] ?? "Decrypted File", // 🚀 USES REAL TITLE
+                  style: const TextStyle(
                     color: Colors.white,
                     fontWeight: FontWeight.bold,
                     fontSize: 14,
                   ),
                 ),
                 Text(
-                  "Log Timestamp: 0${index + 1}:45:00",
+                  "Log Timestamp: ${data['timestamp'].toString().substring(11, 19)}",
                   style: TextStyle(color: Colors.grey[400], fontSize: 10),
                 ),
               ],
@@ -488,7 +505,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
             right: 0,
             child: Container(
               height: 4,
-              decoration: BoxDecoration(
+              decoration: const BoxDecoration(
                 borderRadius: BorderRadius.only(
                   bottomLeft: Radius.circular(8),
                   bottomRight: Radius.circular(8),
@@ -500,10 +517,10 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 widthFactor: progress > 1.0 ? 1.0 : progress,
                 child: Container(
                   decoration: BoxDecoration(
-                    color: Color(0xFF00f0ff),
+                    color: const Color(0xFF00f0ff),
                     boxShadow: [
                       BoxShadow(
-                        color: Color(0xFF00f0ff).withValues(alpha: 0.8),
+                        color: const Color(0xFF00f0ff).withOpacity(0.8),
                         blurRadius: 6,
                       ),
                     ],

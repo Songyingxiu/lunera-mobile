@@ -218,13 +218,8 @@ class _ExploreScreenState extends State<ExploreScreen> {
               Navigator.push(
                 context,
                 MaterialPageRoute(
-                  builder: (context) => DetailScreen(
-                    contentId: content.id, // Passes the ID
-                    title: content.title, // Passes the title
-                    coverUrl: content.thumbnailUrl.isNotEmpty
-                        ? "${ApiService.imageUrl}${content.thumbnailUrl}"
-                        : "https://wallpapers-clan.com/wp-content/uploads/2024/08/chainsaw-man-denji-devil-gif-desktop-wallpaper-preview.gif", // Fallback if no image
-                  ),
+                  // 🚀 FIXED: Now passing the full 'content' object to match the new DetailScreen
+                  builder: (context) => DetailScreen(content: content),
                 ),
               );
             },
