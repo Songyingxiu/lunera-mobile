@@ -63,4 +63,29 @@ class ApiService {
     }
     throw Exception('Failed to load contents');
   }
+
+  // --- READ CATEGORIES (GENRES) ---
+  static Future<List<dynamic>> getCategories() async {
+    final response = await http.get(Uri.parse("$baseUrl/categories"));
+    if (response.statusCode == 200) {
+      final jsonResponse = json.decode(response.body);
+      return jsonResponse['data'] ?? [];
+    }
+    throw Exception('Failed to load categories');
+  }
+
+  // --- SEARCH CONTENTS (Lightning Fast Local Search) ---
+  static Future<List<Content>> searchContents(String query) async {
+    try {
+      // 1. Fetch the master list of all contents (we know this already works perfectly!)
+      final contents = await getContents();
+
+      // 2. Instantly filter them inside the app based on what you typed
+      return contents.where((content) {
+        return content.title.toLowerCase().contains(query.toLowerCase());
+      }).toList();
+    } catch (e) {
+      throw Exception('Search failed: $e');
+    }
+  }
 }
