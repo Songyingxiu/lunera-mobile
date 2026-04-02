@@ -37,12 +37,17 @@ class _ProfileScreenState extends State<ProfileScreen> {
             _userId = userId.toString();
             _avatar = response['data']['user']['avatar'] ?? "";
           });
+          // 🚀 SYNC THE LIVE AVATAR TO DEVICE MEMORY SO THE EDIT SCREEN CAN SEE IT!
+          await prefs.setString('avatar', _avatar);
         }
       } catch (e) {
+        print("🚨 API FAILED: $e"); // Prints the exact error to your terminal
         setState(() {
           _username = prefs.getString('username') ?? "UNKNOWN_USER";
           _role = prefs.getString('role')?.toUpperCase() ?? "STANDARD";
           _userId = userId.toString();
+          _avatar =
+              prefs.getString('avatar') ?? ""; // 🚀 NOW IT REMEMBERS THE IMAGE!
         });
       }
     }
@@ -131,13 +136,38 @@ class _ProfileScreenState extends State<ProfileScreen> {
                             ),
                           ],
                         ),
-                        child: CircleAvatar(
-                          radius: 50,
-                          backgroundColor: Color(0xFF121216),
-                          backgroundImage: _avatar.isNotEmpty
-                              ? NetworkImage("${ApiService.imageUrl}$_avatar")
-                              : NetworkImage('https://i.pravatar.cc/150?img=11')
-                                  as ImageProvider,
+                        child: Container(
+                          width: 100, // 2 * radius (50)
+                          height: 100,
+                          decoration: const BoxDecoration(
+                            color: Color(0xFF121216),
+                            shape: BoxShape.circle,
+                          ),
+                          clipBehavior: Clip.hardEdge,
+                          child: _avatar.isNotEmpty
+                              ? Image.network(
+                                  // 🚀 .trim() destroys invisible spaces!
+                                  "${ApiService.imageUrl}${_avatar.trim()}",
+                                  fit: BoxFit.cover,
+                                  errorBuilder: (context, error, stackTrace) {
+                                    // 🚀 This prints a clickable link in your terminal!
+                                    print(
+                                        "👉 FLUTTER URL: ${ApiService.imageUrl}${_avatar.trim()}");
+                                    print("🚨 PROFILE IMAGE ERROR: $error");
+                                    return const Center(
+                                        child: Icon(Icons.broken_image,
+                                            color: Colors.redAccent, size: 40));
+                                  },
+                                )
+                              : const Center(
+                                  child: Icon(
+                                    Icons
+                                        .person_outline, // Built-in default user icon
+                                    color: Color(
+                                        0xFF00f0ff), // Matches your neon cyan
+                                    size: 50,
+                                  ),
+                                ),
                         ),
                       ),
                       // Online Status Indicator

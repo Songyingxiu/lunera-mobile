@@ -18,6 +18,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
   File? _selectedImage;
   final ImagePicker _picker = ImagePicker();
   bool _isLoading = false;
+  String _currentAvatar = ""; // 🚀 Added to store the database image
 
   @override
   void initState() {
@@ -29,6 +30,8 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
     final prefs = await SharedPreferences.getInstance();
     setState(() {
       _usernameController.text = prefs.getString('username') ?? '';
+      _currentAvatar =
+          prefs.getString('avatar') ?? ''; // 🚀 Load existing image
     });
   }
 
@@ -60,6 +63,10 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
 
         if (response['status'] == 200) {
           await prefs.setString('username', _usernameController.text);
+          // 🚀 Save image filename to memory so the app doesn't forget it!
+          if (response['user'] != null && response['user']['avatar'] != null) {
+            await prefs.setString('avatar', response['user']['avatar']);
+          }
 
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
@@ -147,12 +154,42 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                       ),
                     ],
                   ),
-                  child: CircleAvatar(
-                    radius: 60,
-                    backgroundColor: Color(0xFF121216),
-                    backgroundImage: _selectedImage != null
-                        ? FileImage(_selectedImage!) as ImageProvider
-                        : NetworkImage('https://i.pravatar.cc/150?img=11'),
+                  child: Container(
+                    width: 120, // 2 * radius (60)
+                    height: 120,
+                    decoration: const BoxDecoration(
+                      color: Color(0xFF121216),
+                      shape: BoxShape.circle,
+                    ),
+                    clipBehavior: Clip.hardEdge,
+                    child: _selectedImage != null
+                        ? Image.file(
+                            _selectedImage!,
+                            fit: BoxFit.cover,
+                          )
+                        : (_currentAvatar.isNotEmpty
+                            ? Image.network(
+                                // 🚀 .trim() destroys invisible spaces!
+                                "${ApiService.imageUrl}${_currentAvatar.trim()}",
+                                fit: BoxFit.cover,
+                                errorBuilder: (context, error, stackTrace) {
+                                  print(
+                                      "👉 FLUTTER URL: ${ApiService.imageUrl}${_currentAvatar.trim()}");
+                                  print("🚨 EDIT IMAGE ERROR: $error");
+                                  return const Center(
+                                      child: Icon(Icons.broken_image,
+                                          color: Colors.redAccent, size: 40));
+                                },
+                              )
+                            : const Center(
+                                child: Icon(
+                                  Icons
+                                      .person_outline, // Built-in default user icon
+                                  color: Color(
+                                      0xFF00f0ff), // Matches your neon cyan
+                                  size: 50,
+                                ),
+                              )),
                   ),
                 ),
                 // Glowing Camera Icon
