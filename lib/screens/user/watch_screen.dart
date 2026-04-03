@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:video_player/video_player.dart';
+import 'package:chewie/chewie.dart';
 
 class WatchScreen extends StatefulWidget {
   final String title;
@@ -12,6 +14,10 @@ class WatchScreen extends StatefulWidget {
 }
 
 class _WatchScreenState extends State<WatchScreen> {
+  late VideoPlayerController _videoPlayerController;
+  ChewieController? _chewieController;
+  bool _isLoading = true;
+
   @override
   void initState() {
     super.initState();
@@ -20,12 +26,40 @@ class _WatchScreenState extends State<WatchScreen> {
       DeviceOrientation.landscapeLeft,
       DeviceOrientation.landscapeRight,
     ]);
-    // Hide status bar for full immersion
     SystemChrome.setEnabledSystemUIMode(SystemUiMode.immersiveSticky);
+
+    _initializePlayer();
+  }
+
+  Future<void> _initializePlayer() async {
+    try {
+      _videoPlayerController =
+          VideoPlayerController.networkUrl(Uri.parse(widget.videoUrl));
+      await _videoPlayerController.initialize();
+
+      _chewieController = ChewieController(
+        videoPlayerController: _videoPlayerController,
+        autoPlay: true,
+        looping: false,
+        aspectRatio: _videoPlayerController.value.aspectRatio,
+        materialProgressColors: ChewieProgressColors(
+          playedColor: const Color(0xFF00f0ff),
+          handleColor: const Color(0xFFFF0099),
+          backgroundColor: Colors.white24,
+          bufferedColor: Colors.white54,
+        ),
+      );
+
+      if (mounted) setState(() => _isLoading = false);
+    } catch (e) {
+      debugPrint("🚨 VIDEO ERROR: $e");
+    }
   }
 
   @override
   void dispose() {
+    _videoPlayerController.dispose();
+    _chewieController?.dispose();
     // 🚀 Reset System: Back to portrait and show UI when leaving
     SystemChrome.setPreferredOrientations([
       DeviceOrientation.portraitUp,
@@ -40,54 +74,63 @@ class _WatchScreenState extends State<WatchScreen> {
       backgroundColor: Colors.black,
       body: Stack(
         children: [
-          // 📺 Placeholder for Video Stream
+          // --- 1. THE VIDEO PLAYER ---
           Center(
-            child: Column(
-              // 🚀 FIXED: Changed MainController to MainAxisAlignment
-              mainAxisAlignment: MainAxisAlignment.center, 
-              children: [
-                const Icon(
-                  Icons.play_circle_outline, 
-                  color: Color(0xFF00f0ff), 
-                  size: 80
-                ),
-                const SizedBox(height: 15),
-                Text(
-                  widget.title.toUpperCase(),
-                  style: const TextStyle(
-                    color: Colors.white, 
-                    letterSpacing: 3, 
-                    fontWeight: FontWeight.w900,
-                    fontSize: 18
-                  ),
-                ),
-                const SizedBox(height: 8),
-                Text(
-                  "ESTABLISHING SECURE CONNECTION...",
-                  style: TextStyle(
-                    color: const Color(0xFF00f0ff).withOpacity(0.5), 
-                    fontSize: 10,
-                    letterSpacing: 1
-                  ),
-                ),
-              ],
-            ),
+            child: _isLoading
+                ? Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      const CircularProgressIndicator(color: Color(0xFF00f0ff)),
+                      const SizedBox(height: 15),
+                      Text(
+                        widget.title.toUpperCase(),
+                        style: const TextStyle(
+                            color: Colors.white,
+                            letterSpacing: 3,
+                            fontWeight: FontWeight.bold),
+                      ),
+                      const SizedBox(height: 8),
+                      Text(
+                        "ESTABLISHING SECURE CONNECTION...",
+                        style: TextStyle(
+                            color: const Color(0xFF00f0ff).withOpacity(0.5),
+                            fontSize: 10,
+                            letterSpacing: 1),
+                      ),
+                    ],
+                  )
+                : Chewie(controller: _chewieController!),
           ),
 
-          // Cyberpunk Back Button
+          // --- 2. THE PERMANENT BACK BUTTON ---
+          // 🚀 Removed the 'if (_isLoading)' so you can ALWAYS exit!
           Positioned(
-            top: 30,
-            left: 20,
+            top: 25,
+            left: 25,
             child: GestureDetector(
-              onTap: () => Navigator.pop(context),
+              onTap: () {
+                // Pause the video before popping to prevent audio playing in the background
+                _videoPlayerController.pause();
+                Navigator.pop(context);
+              },
               child: Container(
-                padding: const EdgeInsets.all(8),
+                padding: const EdgeInsets.all(10),
                 decoration: BoxDecoration(
-                  color: Colors.black54,
+                  color: Colors
+                      .black87, // Darker background to see it over bright videos
                   shape: BoxShape.circle,
-                  border: Border.all(color: const Color(0xFF00f0ff).withOpacity(0.3)),
+                  border:
+                      Border.all(color: const Color(0xFF00f0ff), width: 1.5),
+                  boxShadow: [
+                    BoxShadow(
+                      color: const Color(0xFF00f0ff).withOpacity(0.5),
+                      blurRadius: 10,
+                      spreadRadius: 1,
+                    )
+                  ],
                 ),
-                child: const Icon(Icons.arrow_back, color: Colors.white, size: 20),
+                child:
+                    const Icon(Icons.arrow_back, color: Colors.white, size: 24),
               ),
             ),
           ),

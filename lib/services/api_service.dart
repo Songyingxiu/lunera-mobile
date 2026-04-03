@@ -12,7 +12,8 @@ class ApiService {
 
   // --- 1. IDENTITY & AUTHENTICATION ---
 
-  static Future<Map<String, dynamic>> login(String username, String password) async {
+  static Future<Map<String, dynamic>> login(
+      String username, String password) async {
     try {
       final response = await http.post(
         Uri.parse("$baseUrl/auth/login"),
@@ -39,29 +40,38 @@ class ApiService {
   static Future<Map<String, dynamic>> updateProfile(
       int id, String username, String password, File? imageFile) async {
     try {
-      var request = http.MultipartRequest('POST', Uri.parse("$baseUrl/profile/update"));
+      var request =
+          http.MultipartRequest('POST', Uri.parse("$baseUrl/profile/update"));
       request.fields['id_user'] = id.toString();
       request.fields['username'] = username;
       request.fields['password'] = password;
 
       if (imageFile != null) {
-        request.files.add(await http.MultipartFile.fromPath('avatar', imageFile.path));
+        request.files
+            .add(await http.MultipartFile.fromPath('avatar', imageFile.path));
       }
 
       var streamedResponse = await request.send();
       var response = await http.Response.fromStream(streamedResponse);
       return json.decode(response.body);
     } catch (e) {
-      return {'status': 500, 'message': 'UPLOAD_FAIL: Data corruption during sync.'};
+      return {
+        'status': 500,
+        'message': 'UPLOAD_FAIL: Data corruption during sync.'
+      };
     }
   }
 
   static Future<Map<String, dynamic>> deleteAccount(int id) async {
     try {
-      final response = await http.delete(Uri.parse("$baseUrl/profile/delete/$id"));
+      final response =
+          await http.delete(Uri.parse("$baseUrl/profile/delete/$id"));
       return json.decode(response.body);
     } catch (e) {
-      return {'status': 500, 'message': 'PURGE_FAIL: Unable to erase identity.'};
+      return {
+        'status': 500,
+        'message': 'PURGE_FAIL: Unable to erase identity.'
+      };
     }
   }
 
@@ -98,13 +108,14 @@ class ApiService {
   // 🚀 SYNCED: Fetches all episodes linked to content ID
   static Future<List<Episode>> getEpisodes(int contentId) async {
     try {
-      final response = await http.get(Uri.parse("$baseUrl/episodes/$contentId"));
+      final response =
+          await http.get(Uri.parse("$baseUrl/episodes/$contentId"));
       if (response.statusCode == 200) {
         final jsonResponse = json.decode(response.body);
-        
+
         // Priority for the 'data' key used in your Lunera.php controller
         List data = jsonResponse['data'] ?? jsonResponse['results'] ?? [];
-        
+
         return data.map((e) => Episode.fromJson(e)).toList();
       }
       return [];
@@ -116,7 +127,8 @@ class ApiService {
 
   // --- 3. FAVORITES (DATABASE SYNC) ---
 
-  static Future<Map<String, dynamic>> toggleFavorite(int userId, int contentId) async {
+  static Future<Map<String, dynamic>> toggleFavorite(
+      int userId, int contentId) async {
     try {
       final response = await http.post(
         Uri.parse("$baseUrl/toggleFavorite/$contentId"),
@@ -129,7 +141,7 @@ class ApiService {
           return decoded;
         }
       }
-      
+
       return {
         'status': response.statusCode,
         'message': 'SERVER_ERROR: Invalid format.',
@@ -148,16 +160,16 @@ class ApiService {
   static Future<List<Content>> getFavorites(int userId) async {
     try {
       final response = await http.get(Uri.parse("$baseUrl/favorites/$userId"));
-      
+
       if (response.statusCode == 200) {
         final jsonResponse = json.decode(response.body);
         List data = jsonResponse['data'] ?? [];
         return data.map((e) => Content.fromJson(e)).toList();
       }
-      return []; 
+      return [];
     } catch (e) {
       debugPrint("🚨 FAV_SYNC_ERROR: $e");
-      return []; 
+      return [];
     }
   }
 
