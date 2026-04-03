@@ -75,6 +75,32 @@ class ApiService {
     }
   }
 
+  static Future<Map<String, dynamic>> register(String username, String password,
+      String email, String profileName, File? avatar) async {
+    try {
+      var request =
+          http.MultipartRequest('POST', Uri.parse("$baseUrl/auth/register"));
+
+      // Attach text fields
+      request.fields['username'] = username;
+      request.fields['password'] = password;
+      request.fields['email'] = email;
+      request.fields['profile_name'] = profileName;
+
+      // Attach image file (if they selected one)
+      if (avatar != null) {
+        request.files
+            .add(await http.MultipartFile.fromPath('avatar', avatar.path));
+      }
+
+      var streamedResponse = await request.send();
+      var response = await http.Response.fromStream(streamedResponse);
+      return json.decode(response.body);
+    } catch (e) {
+      return {'status': 500, 'message': 'REGISTER_FAIL: Connection refused.'};
+    }
+  }
+
   // --- 2. DATA CORE (CONTENTS & EPISODES) ---
 
   static Future<List<Content>> getContents() async {

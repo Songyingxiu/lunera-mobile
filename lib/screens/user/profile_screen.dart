@@ -14,10 +14,10 @@ class ProfileScreen extends StatefulWidget {
 
 class _ProfileScreenState extends State<ProfileScreen> {
   String _username = "LOADING...";
-  String _role = "LOADING";
+  String _email = "LOADING";
   String _userId = "0000";
   String _avatar = "";
-  
+
   // 🚀 ADDED: List to store your real history data
   List<Map<String, dynamic>> _historyItems = [];
 
@@ -45,7 +45,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
         if (response['status'] == 200) {
           setState(() {
             _username = response['data']['user']['username'];
-            _role = response['data']['user']['role'].toString().toUpperCase();
+            _email = response['data']['user']['email'].toString().toUpperCase();
             _userId = userId.toString();
             _avatar = response['data']['user']['avatar'] ?? "";
           });
@@ -56,9 +56,10 @@ class _ProfileScreenState extends State<ProfileScreen> {
         print("🚨 API FAILED: $e"); // Prints the exact error to your terminal
         setState(() {
           _username = prefs.getString('username') ?? "UNKNOWN_USER";
-          _role = prefs.getString('role')?.toUpperCase() ?? "STANDARD";
+          _email = prefs.getString('email')?.toUpperCase() ?? "OFFLINE";
           _userId = userId.toString();
-          _avatar = prefs.getString('avatar') ?? ""; // 🚀 NOW IT REMEMBERS THE IMAGE!
+          _avatar =
+              prefs.getString('avatar') ?? ""; // 🚀 NOW IT REMEMBERS THE IMAGE!
         });
       }
     }
@@ -92,9 +93,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
             letterSpacing: 4,
             fontWeight: FontWeight.w900,
             shadows: [
-              Shadow(
-                  color: Color(0xFF00f0ff),
-                  blurRadius: 10),
+              Shadow(color: Color(0xFF00f0ff), blurRadius: 10),
             ],
           ),
         ),
@@ -178,7 +177,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                 )
                               : const Center(
                                   child: Icon(
-                                    Icons.person_outline, // Built-in default user icon
+                                    Icons
+                                        .person_outline, // Built-in default user icon
                                     color: Color(
                                         0xFF00f0ff), // Matches your neon cyan
                                     size: 50,
@@ -199,7 +199,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
                             width: 4,
                           ),
                           boxShadow: [
-                            const BoxShadow(color: Colors.greenAccent, blurRadius: 8),
+                            const BoxShadow(
+                                color: Colors.greenAccent, blurRadius: 8),
                           ],
                         ),
                       ),
@@ -220,7 +221,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   ),
                   const SizedBox(height: 4),
                   Text(
-                    "ID: #$_userId-SYS  |  Access: $_role",
+                    "ID: #$_userId-SYS  |  Email: $_email",
                     style: const TextStyle(
                       color: Color(0xFF00f0ff),
                       fontSize: 12,
@@ -313,20 +314,22 @@ class _ProfileScreenState extends State<ProfileScreen> {
             // --- 3. RECENT HISTORY SECTION ---
             _buildSectionHeader("RECENT ACTIVITY", const Color(0xFF00f0ff)),
             const SizedBox(height: 16),
-            
+
             // 🚀 MODIFIED: This now shows your REAL history items
-            _historyItems.isEmpty 
-              ? const Center(child: Text("NO RECENT LOGS", style: TextStyle(color: Colors.white24)))
-              : SizedBox(
-                  height: 160,
-                  child: ListView.builder(
-                    scrollDirection: Axis.horizontal,
-                    itemCount: _historyItems.length,
-                    itemBuilder: (context, index) {
-                      return _buildHistoryCard(_historyItems[index], index);
-                    },
+            _historyItems.isEmpty
+                ? const Center(
+                    child: Text("NO RECENT LOGS",
+                        style: TextStyle(color: Colors.white24)))
+                : SizedBox(
+                    height: 160,
+                    child: ListView.builder(
+                      scrollDirection: Axis.horizontal,
+                      itemCount: _historyItems.length,
+                      itemBuilder: (context, index) {
+                        return _buildHistoryCard(_historyItems[index], index);
+                      },
+                    ),
                   ),
-                ),
 
             const SizedBox(height: 50),
 
@@ -351,7 +354,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     borderRadius: BorderRadius.circular(8),
                   ),
                 ),
-                icon: const Icon(Icons.power_settings_new, color: Colors.redAccent),
+                icon: const Icon(Icons.power_settings_new,
+                    color: Colors.redAccent),
                 label: const Text(
                   "SYSTEM DISCONNECT",
                   style: TextStyle(
@@ -389,9 +393,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
             fontSize: 16,
             fontWeight: FontWeight.bold,
             letterSpacing: 2,
-            shadows: [
-              Shadow(color: color.withOpacity(0.5), blurRadius: 10)
-            ],
+            shadows: [Shadow(color: color.withOpacity(0.5), blurRadius: 10)],
           ),
         ),
       ],
@@ -449,7 +451,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
   // 🚀 MODIFIED: History card now accepts real DATA
   Widget _buildHistoryCard(Map<String, dynamic> data, int index) {
-    double progress = 0.4 + (index * 0.15); 
+    double progress = 0.4 + (index * 0.15);
 
     return Container(
       width: 240,
