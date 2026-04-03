@@ -89,6 +89,17 @@ class _ExploreScreenState extends State<ExploreScreen> {
     }
   }
 
+  // 🚀 ADDED: Bulletproof Image Helper
+  String _getImageUrl(String path) {
+    if (path.isEmpty) return "https://via.placeholder.com/150";
+
+    // If it's already a full web link, just use it directly!
+    if (path.startsWith('http')) return path;
+
+    // If it's a local file, attach the server address
+    return "${ApiService.baseUrl.replaceAll('/api', '')}/uploads/covers/${path.trim()}";
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -190,8 +201,8 @@ class _ExploreScreenState extends State<ExploreScreen> {
                     color: const Color(0xFF00f0ff).withValues(alpha: 0.3)),
                 image: content.thumbnailUrl.isNotEmpty
                     ? DecorationImage(
-                        image: NetworkImage(
-                            "${ApiService.imageUrl}${content.thumbnailUrl}"),
+                        // 🚀 UPDATED: Uses the smart helper instead of hardcoded URL!
+                        image: NetworkImage(_getImageUrl(content.thumbnailUrl)),
                         fit: BoxFit.cover,
                       )
                     : null,
@@ -218,7 +229,6 @@ class _ExploreScreenState extends State<ExploreScreen> {
               Navigator.push(
                 context,
                 MaterialPageRoute(
-                  // 🚀 FIXED: Now passing the full 'content' object to match the new DetailScreen
                   builder: (context) => DetailScreen(content: content),
                 ),
               );

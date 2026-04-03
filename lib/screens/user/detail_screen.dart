@@ -313,97 +313,101 @@ class _DetailScreenState extends State<DetailScreen> {
                         style: const TextStyle(
                             color: Colors.white70, height: 1.6, fontSize: 14)),
 
-                    const SizedBox(height: 32),
-                    Container(
-                      decoration: const BoxDecoration(
-                          border: Border(
-                              left: BorderSide(
-                                  color: Color(0xFF00f0ff), width: 3))),
-                      padding: const EdgeInsets.only(left: 10),
-                      child: const Text("EPISODES",
-                          style: TextStyle(
-                              color: Colors.white,
-                              fontSize: 18,
-                              fontWeight: FontWeight.bold,
-                              letterSpacing: 1.5)),
-                    ),
-                    const SizedBox(height: 16),
+                    // 🚀 Only show the EPISODES header if the type is NOT 'movie'
+                    if (widget.content.type.toLowerCase() != 'movie') ...[
+                      const SizedBox(height: 32),
+                      Container(
+                        decoration: const BoxDecoration(
+                            border: Border(
+                                left: BorderSide(
+                                    color: Color(0xFF00f0ff), width: 3))),
+                        padding: const EdgeInsets.only(left: 10),
+                        child: const Text("EPISODES",
+                            style: TextStyle(
+                                color: Colors.white,
+                                fontSize: 18,
+                                fontWeight: FontWeight.bold,
+                                letterSpacing: 1.5)),
+                      ),
+                      const SizedBox(height: 16),
+                    ],
                   ],
                 ),
               ),
 
               // --- DYNAMIC EPISODES ---
-              _isLoadingEpisodes
-                  ? const Center(
-                      child: Padding(
-                          padding: EdgeInsets.all(30),
-                          child: CircularProgressIndicator(
-                              color: Color(0xFF00f0ff))))
-                  : _episodes.isEmpty
-                      ? _buildComingSoon()
-                      : ListView.builder(
-                          padding: const EdgeInsets.symmetric(horizontal: 16),
-                          shrinkWrap: true,
-                          physics: const NeverScrollableScrollPhysics(),
-                          itemCount: _episodes.length,
-                          itemBuilder: (context, index) {
-                            final ep = _episodes[index];
-                            return Container(
-                              margin: const EdgeInsets.only(bottom: 12),
-                              decoration: BoxDecoration(
-                                color: const Color(0xFF121216),
-                                borderRadius: BorderRadius.circular(12),
-                                border: Border.all(color: Colors.white10),
-                              ),
-                              child: ListTile(
-                                onTap: () {
-                                  Navigator.push(
-                                    context,
-                                    MaterialPageRoute(
-                                      builder: (context) => WatchScreen(
-                                        title:
-                                            "EP ${ep.episodeNo}: ${ep.title.toUpperCase()}",
-                                        videoUrl: _getVideoUrl(
-                                            ep.videoUrl), // 🚀 Fixed Warning
+              // 🚀 If it's a movie, completely delete the loading ring, coming soon, and list UI
+              if (widget.content.type.trim().toLowerCase() != 'movie')
+                _isLoadingEpisodes
+                    ? const Center(
+                        child: Padding(
+                            padding: EdgeInsets.all(30),
+                            child: CircularProgressIndicator(
+                                color: Color(0xFF00f0ff))))
+                    : _episodes.isEmpty
+                        ? _buildComingSoon()
+                        : ListView.builder(
+                            padding: const EdgeInsets.symmetric(horizontal: 16),
+                            shrinkWrap: true,
+                            physics: const NeverScrollableScrollPhysics(),
+                            itemCount: _episodes.length,
+                            itemBuilder: (context, index) {
+                              final ep = _episodes[index];
+                              return Container(
+                                margin: const EdgeInsets.only(bottom: 12),
+                                decoration: BoxDecoration(
+                                  color: const Color(0xFF121216),
+                                  borderRadius: BorderRadius.circular(12),
+                                  border: Border.all(color: Colors.white10),
+                                ),
+                                child: ListTile(
+                                  onTap: () {
+                                    Navigator.push(
+                                      context,
+                                      MaterialPageRoute(
+                                        builder: (context) => WatchScreen(
+                                          title:
+                                              "EP ${ep.episodeNo}: ${ep.title.toUpperCase()}",
+                                          videoUrl: _getVideoUrl(ep.videoUrl),
+                                        ),
+                                      ),
+                                    );
+                                  },
+                                  contentPadding: const EdgeInsets.all(8),
+                                  leading: Container(
+                                    width: 120,
+                                    height: 70,
+                                    decoration: BoxDecoration(
+                                      borderRadius: BorderRadius.circular(8),
+                                      image: DecorationImage(
+                                        image: NetworkImage(ep.thumbnail),
+                                        fit: BoxFit.cover,
                                       ),
                                     ),
-                                  );
-                                },
-                                contentPadding: const EdgeInsets.all(8),
-                                leading: Container(
-                                  width: 120,
-                                  height: 70,
-                                  decoration: BoxDecoration(
-                                    borderRadius: BorderRadius.circular(8),
-                                    image: DecorationImage(
-                                      image: NetworkImage(ep.thumbnail),
-                                      fit: BoxFit.cover,
-                                    ),
+                                    child: const Center(
+                                        child: Icon(Icons.play_circle_fill,
+                                            color: Colors.white70, size: 30)),
                                   ),
-                                  child: const Center(
-                                      child: Icon(Icons.play_circle_fill,
-                                          color: Colors.white70, size: 30)),
-                                ),
-                                title: Text(
-                                  "EP. ${ep.episodeNo}: ${ep.title}",
-                                  style: const TextStyle(
-                                      color: Colors.white,
-                                      fontWeight: FontWeight.bold,
-                                      fontSize: 13),
-                                  maxLines: 1,
-                                  overflow: TextOverflow.ellipsis,
-                                ),
-                                subtitle: Text(
-                                    "${ep.duration}m • High Fidelity Stream",
+                                  title: Text(
+                                    "EP. ${ep.episodeNo}: ${ep.title}",
                                     style: const TextStyle(
-                                        color: Colors.grey, fontSize: 11)),
-                                trailing: const Icon(
-                                    Icons.file_download_outlined,
-                                    color: Color(0xFF00f0ff)),
-                              ),
-                            );
-                          },
-                        ),
+                                        color: Colors.white,
+                                        fontWeight: FontWeight.bold,
+                                        fontSize: 13),
+                                    maxLines: 1,
+                                    overflow: TextOverflow.ellipsis,
+                                  ),
+                                  subtitle: Text(
+                                      "${ep.duration}m • High Fidelity Stream",
+                                      style: const TextStyle(
+                                          color: Colors.grey, fontSize: 11)),
+                                  trailing: const Icon(
+                                      Icons.file_download_outlined,
+                                      color: Color(0xFF00f0ff)),
+                                ),
+                              );
+                            },
+                          ),
               const SizedBox(height: 40),
             ]),
           ),
